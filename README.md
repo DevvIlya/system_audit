@@ -37,5 +37,5 @@ curl -fsSL https://raw.githubusercontent.com/DevvIlya/system_audit/main/install.
 ## Запуск
 
 ```bash
-sudo system-audit
+system-audit
 ```
