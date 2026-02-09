@@ -7,22 +7,24 @@ from datetime import datetime
 import yaml
 import json
 from tabulate import tabulate
-
 from pathlib import Path
 
+# 📁 Абсолютные пути
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "config.yaml"
 
-CONFIG_FILE = "config.yaml"
 with open(CONFIG_FILE) as f:
     config = yaml.safe_load(f)
 
-REPORT_DIR = config.get("report_dir", "reports")
-os.makedirs(REPORT_DIR, exist_ok=True)
-BASH_SCRIPT = config.get("bash_script", "./utils.sh")
+# Отчёты рядом с проектом
+REPORT_DIR = BASE_DIR / config.get("report_dir", "reports")
+REPORT_DIR.mkdir(exist_ok=True)
+
+# Скрипт bash тоже через BASE_DIR
+BASH_SCRIPT = BASE_DIR / config.get("bash_script", "utils.sh")
 
 def run_bash():
-    result = subprocess.run(["bash", BASH_SCRIPT], capture_output=True, text=True)
+    result = subprocess.run(["bash", str(BASH_SCRIPT)], capture_output=True, text=True)
     return result.stdout + result.stderr
 
 def parse_sections(raw_output: str) -> dict:
@@ -100,9 +102,9 @@ def generate_report():
     md_verdicts = tabulate(verdicts, headers=["Check", "Status"], tablefmt="github")
 
     # Пути
-    txt_path = f"{REPORT_DIR}/{config.get('report_prefix','report')}_{timestamp}.txt"
-    md_path = f"{REPORT_DIR}/{config.get('report_prefix','report')}_{timestamp}.md"
-    json_path = f"{REPORT_DIR}/{config.get('report_prefix','report')}_{timestamp}.json"
+    txt_path = REPORT_DIR / f"{config.get('report_prefix','report')}_{timestamp}.txt"
+    md_path = REPORT_DIR / f"{config.get('report_prefix','report')}_{timestamp}.md"
+    json_path = REPORT_DIR / f"{config.get('report_prefix','report')}_{timestamp}.json"
 
     # TXT
     with open(txt_path, "w") as f:
