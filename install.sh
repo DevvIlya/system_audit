@@ -3,7 +3,7 @@ set -e
 
 echo "[*] System Audit Tool installation started"
 
-INSTALL_DIR="$(pwd)/system-audit"
+INSTALL_DIR="$HOME/system-audit"
 VENV_DIR="$INSTALL_DIR/venv"
 BIN_PATH="$INSTALL_DIR/system-audit"
 REPO_URL="https://github.com/DevvIlya/system_audit.git"
@@ -61,8 +61,19 @@ fi
 # Создаем папку reports
 mkdir -p "$INSTALL_DIR/reports"
 
-echo
+# Автоматически добавляем в PATH, если еще не добавлено
+SHELL_RC="$HOME/.bashrc"
+if ! grep -q 'system-audit' "$SHELL_RC"; then
+    echo '' >> "$SHELL_RC"
+    echo '# Added by system-audit installer' >> "$SHELL_RC"
+    echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$SHELL_RC"
+    echo "[*] Added $INSTALL_DIR to PATH in $SHELL_RC"
+    # Подгружаем сразу в текущую сессию
+    export PATH="$INSTALL_DIR:$PATH"
+fi
+
 echo "[+] Installation completed successfully!"
+echo "Now you can run 'system-audit' from any directory."
 echo "Run: $BIN_PATH"
 echo "Or add $INSTALL_DIR to your PATH to run as 'system-audit'"
 echo
