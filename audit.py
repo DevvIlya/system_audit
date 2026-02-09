@@ -8,6 +8,11 @@ import yaml
 import json
 from tabulate import tabulate
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_FILE = BASE_DIR / "config.yaml"
+
 CONFIG_FILE = "config.yaml"
 with open(CONFIG_FILE) as f:
     config = yaml.safe_load(f)

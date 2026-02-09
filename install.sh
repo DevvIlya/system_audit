@@ -36,3 +36,8 @@ sudo chmod +x "$BIN_PATH"
 
 echo "[+] Installation completed successfully"
 echo "Run: system-audit"
+
+echo
+echo "[✓] system-audit installed:"
+which system-audit
+system-audit --help || true
