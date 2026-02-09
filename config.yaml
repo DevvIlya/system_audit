@@ -40,15 +40,3 @@ check_network: true
 sudo_required:
   - firewall
   - cron_root
-
-# =========================
-# Дополнительно
-# =========================
-# Вывод скрипта utils.sh теперь синхронизирован с audit.py
-# Баллы и security score отключены — остались только вердикты OK/WARN/FAIL
-# Вердикты формируются по:
-# - firewall: ufw активен -> OK, нет ufw -> WARN
-# - ssh root login: ALLOWED -> FAIL, DENIED -> OK
-# - ssh password auth: yes -> WARN, no -> OK
-# - fail2ban: сервис активен -> OK, нет -> WARN
-# Это упрощает аудит и делает его безопасным для вывода.

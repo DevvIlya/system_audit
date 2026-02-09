@@ -9,21 +9,30 @@ import json
 from tabulate import tabulate
 from pathlib import Path
 
-# 📁 Абсолютные пути
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "config.yaml"
 
+# Загружаем конфиг
+if not CONFIG_FILE.exists():
+    print(f"[!] config.yaml not found at {CONFIG_FILE}, creating default.")
+    CONFIG_FILE.write_text("""
+report_dir: reports
+report_prefix: report
+check_firewall: true
+check_ssh: true
+check_fail2ban: true
+bash_script: ./utils.sh
+""")
 with open(CONFIG_FILE) as f:
     config = yaml.safe_load(f)
 
-# Отчёты рядом с проектом
 REPORT_DIR = BASE_DIR / config.get("report_dir", "reports")
 REPORT_DIR.mkdir(exist_ok=True)
-
-# Скрипт bash тоже через BASE_DIR
-BASH_SCRIPT = BASE_DIR / config.get("bash_script", "utils.sh")
+BASH_SCRIPT = BASE_DIR / config.get("bash_script", "./utils.sh")
 
 def run_bash():
+    if not BASH_SCRIPT.exists():
+        return "=== WARNING ===\nBash script not found.\n"
     result = subprocess.run(["bash", str(BASH_SCRIPT)], capture_output=True, text=True)
     return result.stdout + result.stderr
 

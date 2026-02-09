@@ -1,49 +1,70 @@
 #!/usr/bin/env bash
 set -e
 
-REPO_URL="https://github.com/DevvIlya/system_audit.git"
-INSTALL_DIR="/opt/system-audit"
-VENV_DIR="$INSTALL_DIR/venv"
-BIN_PATH="/usr/local/bin/system-audit"
-
 echo "[*] System Audit Tool installation started"
-echo "[*] Installing to $INSTALL_DIR"
 
-# Проверка git и python
+INSTALL_DIR="$(pwd)/system-audit"
+VENV_DIR="$INSTALL_DIR/venv"
+BIN_PATH="$INSTALL_DIR/system-audit"
+REPO_URL="https://github.com/DevvIlya/system_audit.git"
+
+# Проверка зависимостей
 for cmd in git python3; do
     if ! command -v $cmd &>/dev/null; then
-        echo "[!] $cmd not found. Please install it first."
+        echo "[!] $cmd not found. Install it first."
         exit 1
     fi
 done
 
-# Клонируем репозиторий
-sudo rm -rf "$INSTALL_DIR"
-sudo git clone "$REPO_URL" "$INSTALL_DIR"
+echo "[*] Installing to $INSTALL_DIR"
 
-# Виртуальное окружение
-echo "[*] Creating virtual environment"
-sudo python3 -m venv "$VENV_DIR"
+# Клонируем или обновляем репозиторий
+if [ -d "$INSTALL_DIR" ]; then
+    cd "$INSTALL_DIR"
+    git pull
+else
+    git clone "$REPO_URL" "$INSTALL_DIR"
+fi
 
-# Установка зависимостей
-echo "[*] Installing Python dependencies"
-sudo "$VENV_DIR/bin/pip" install --upgrade pip
-sudo "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+cd "$INSTALL_DIR"
 
-# Создаём CLI команду с абсолютными путями
-echo "[*] Creating CLI command: system-audit"
-sudo tee "$BIN_PATH" > /dev/null <<EOF
+# Создаем виртуальное окружение
+if [ ! -d "$VENV_DIR" ]; then
+    echo "[*] Creating virtual environment"
+    python3 -m venv "$VENV_DIR"
+fi
+
+# Устанавливаем зависимости
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r requirements.txt
+
+# Создаем CLI-скрипт
+cat > "$BIN_PATH" <<EOF
 #!/usr/bin/env bash
-exec $VENV_DIR/bin/python $INSTALL_DIR/audit.py "\$@"
+exec "$VENV_DIR/bin/python" "$INSTALL_DIR/audit.py" "\$@"
 EOF
+chmod +x "$BIN_PATH"
 
-sudo chmod +x "$BIN_PATH"
+# Проверяем config.yaml
+if [ ! -f "$INSTALL_DIR/config.yaml" ]; then
+    echo "[*] Creating default config.yaml"
+    cat > "$INSTALL_DIR/config.yaml" <<EOC
+report_dir: reports
+report_prefix: report
+check_firewall: true
+check_ssh: true
+check_fail2ban: true
+bash_script: ./utils.sh
+EOC
+fi
 
-echo "[+] Installation completed successfully"
-echo "Run: system-audit"
-
+# Создаем папку reports
+mkdir -p "$INSTALL_DIR/reports"
 
 echo
-echo "[✓] system-audit installed:"
-which system-audit
-system-audit --help || true
+echo "[+] Installation completed successfully!"
+echo "Run: $BIN_PATH"
+echo "Or add $INSTALL_DIR to your PATH to run as 'system-audit'"
+echo
+echo "[✓] Testing installation:"
+"$BIN_PATH" --help || true
