@@ -1,0 +1,54 @@
+# =========================
+# System Audit Configuration
+# =========================
+
+# Секции проверки
+# Эти секции определяют, что проверяется скриптом
+checks:
+  security:
+    - firewall        # Проверка состояния ufw
+    - ssh_config      # Проверка конфигурации SSH и root login
+    - fail2ban        # Проверка наличия fail2ban среди активных сервисов
+  infra:
+    - running_services  # Состояние критических сервисов (ssh, fail2ban, nginx, apache, postgresql)
+    - cron_jobs         # Cron текущего пользователя и root + системные cron файлы
+    - users             # Список пользователей с uid>=1000, sudo-группа и shadow без пароля
+    - network           # Сетевые интерфейсы и открытые порты
+
+# Префикс для имени отчёта
+# Будет использоваться при генерации txt/md/json файлов
+report_prefix: "report"
+
+# Bash-скрипт, собирающий сырые данные
+bash_script: "./utils.sh"
+
+# Папка для хранения отчётов
+report_dir: "reports"
+
+# Опции проверки (для audit.py)
+# True/False - включение или выключение проверки
+check_firewall: true
+check_ssh: true
+check_fail2ban: true
+check_services: true
+check_cron: true
+check_users: true
+check_network: true
+
+# Список проверок, для которых нужны sudo-права
+# Сюда добавляем firewall и root cron, так как они требуют админских прав
+sudo_required:
+  - firewall
+  - cron_root
+
+# =========================
+# Дополнительно
+# =========================
+# Вывод скрипта utils.sh теперь синхронизирован с audit.py
+# Баллы и security score отключены — остались только вердикты OK/WARN/FAIL
+# Вердикты формируются по:
+# - firewall: ufw активен -> OK, нет ufw -> WARN
+# - ssh root login: ALLOWED -> FAIL, DENIED -> OK
+# - ssh password auth: yes -> WARN, no -> OK
+# - fail2ban: сервис активен -> OK, нет -> WARN
+# Это упрощает аудит и делает его безопасным для вывода.
