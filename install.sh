@@ -19,11 +19,12 @@ sudo git clone "$REPO_URL" "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
 echo "[*] Creating virtual environment"
-python3 -m venv venv
+sudo python3 -m venv "$VENV_DIR"
 
 echo "[*] Installing dependencies"
-"$VENV_DIR/bin/pip" install --upgrade pip
-"$VENV_DIR/bin/pip" install -r requirements.txt
+sudo "$VENV_DIR/bin/pip" install --upgrade pip
+sudo "$VENV_DIR/bin/pip" install -r requirements.txt
+
 
 echo "[*] Creating CLI command: system-audit"
 sudo tee "$BIN_PATH" > /dev/null <<EOF
