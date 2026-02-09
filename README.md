@@ -32,6 +32,7 @@ System Audit Tool — инструмент для базового security и �
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DevvIlya/system_audit/main/install.sh | bash
+```
 
 ## Запуск
 
